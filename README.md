@@ -1,0 +1,2 @@
+# relman
+Release manager CLI
