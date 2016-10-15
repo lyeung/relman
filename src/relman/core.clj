@@ -44,7 +44,7 @@
       (io/file targetPath  rootWarFilename))))
 
 (defn listFiles
-  "List files by matching prefix and suffix"
+  "List files by matching prefix and suffix from a directory path"
   [prefix suffix dirPath]
   (let [files (.listFiles (io/file dirPath))]
     (findArtifact files prefix suffix)))
