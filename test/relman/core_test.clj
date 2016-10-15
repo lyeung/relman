@@ -58,9 +58,6 @@
 
 (deftest listFiles-test
   (let [list ["feature-xxx-#100" "feature-xxx-#101" "feature-xxx-#200"]]
-    ;; clean-up
-    (doseq [e list]
-      (io/delete-file e true))
     ;; create test files
     (doseq [e list]
       (with-open [writer (io/writer (str tmpDir e))]
