@@ -1,4 +1,5 @@
 (ns relman.core
+  (:require [clojure.java.io :as io])
   (:gen-class))
 
 (def rootWarFilename
@@ -25,22 +26,28 @@
 (defn artifactPredicate
   "An artifact predicate indicating if file contains prefix and suffix"
   [prefix suffix artifact]
-  (if (not (containsSuffix artifact suffix))
+  (if (not (containsSuffix (.getName artifact) suffix))
     false
-    (containsPrefix artifact prefix))) 
-    ;;(= prefix (subs artifact 0 (count prefix)))))
-   ;;(and (= prefix (subs artifact 0 (count prefix))) (= suffix (subs artifact (getSuffixIndex artifact suffix) (count artifact))))))
+    (containsPrefix (.getName artifact) prefix))) 
 
 (defn findArtifact
-  "Find artifact by prefix and suffix"
+  "Find artifact as file by prefix and suffix"
   [artifacts prefix suffix]
   (into []
     (filter #(artifactPredicate prefix suffix %) artifacts)))
 
 (defn copyToRootWarFilename
   "Copy artifact path to ROOT.war"
-  [artifact]
-  (clojure.java.io/copy (clojure.java.io/file artifact) (clojure.java.io/file (str ("/tmp/" rootWarFilename)))))
+  [artifactFile]
+  (let [targetPath (.getParent artifactFile)]
+    (io/copy artifactFile
+      (io/file targetPath  rootWarFilename))))
+
+(defn listFiles
+  "List files by matching prefix and suffix"
+  [prefix suffix dirPath]
+  (let [files (.listFiles (io/file dirPath))]
+    (findArtifact files prefix suffix)))
 
 (defn releaseArtifact
   "Release artifact"
