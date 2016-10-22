@@ -1,5 +1,7 @@
 (ns relman.core
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.tools.nrepl.server :as nrepl-server]
+            [cider.nrepl :refer (cider-nrepl-handler)])
   (:gen-class))
 
 (def rootWarFilename
@@ -37,11 +39,11 @@
     (filter #(artifactPredicate prefix suffix %) artifacts)))
 
 (defn copyToRootWarFilename
-  "Copy artifact path to ROOT.war"
-  [artifactFile]
+  "Copy artifact path to <prefix>/ROOT.war"
+  [artifactFile prefix]
   (let [targetPath (.getParent artifactFile)]
     (io/copy artifactFile
-      (io/file targetPath  rootWarFilename))))
+      (io/file (str targetPath "/" prefix) rootWarFilename))))
 
 (defn listFiles
   "List files by matching prefix and suffix from a directory path"
@@ -49,10 +51,38 @@
   (let [files (.listFiles (io/file dirPath))]
     (findArtifact files prefix suffix)))
 
+(defn prepareDir
+  "Prepare directory structure by deleting and creating a directory if it does not exist and deleting ROOT.war file if exists under this directory and create prefix directory."
+  [artifactFile prefix]
+  (let [dirPath (.getParent artifactFile)
+    dir (io/file dirPath)
+    branchTypeDir (io/file (str dirPath "/" prefix))
+    rootWarFile (io/file dirPath rootWarFilename)]
+    (if-not (.isDirectory dir)
+      (.mkdir dir))
+    (if-not (.isDirectory branchTypeDir)
+      (.mkdir branchTypeDir))
+    ;;(if (and (.exists artifactFile) (not (.isDirectory artifactFile)))
+    (if (and (.exists rootWarFile) (not (.isDirectory rootWarFile)))
+      (io/delete-file rootWarFile))
+    artifactFile
+  ))
+
 (defn releaseArtifact
   "Release artifact"
-  [filename]
-  (println "Release artifact"))
+  ([prefix suffix] (releaseArtifact prefix suffix 
+                                    (.getParent (io/file "."))))
+  ([prefix suffix dirPath]
+    (let [artifacts (listFiles prefix suffix dirPath)]
+      (cond
+        (<= (count artifacts) 0) :no-artifacts-found
+        (> (count artifacts) 1) :multiple-artifacts-found
+        :else
+          (do (copyToRootWarFilename
+                (prepareDir (first artifacts) prefix) prefix)
+          (first artifacts))
+        ))))
+
 
 (defn printUsage
   "Print usage"
