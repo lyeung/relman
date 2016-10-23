@@ -133,6 +133,44 @@
     (is (true? (.isDirectory featureDir)))
     (is (true? (and (.exists rootFile))))))
 
+(deftest releaseArtifact-test-failed-no-artifacts-found
+  (let [currentMillis (millis)
+    dirName (tmpDir "dir-releaseArtifact-test-failed-no-artifacts-found" currentMillis )
+    dir (io/file dirName)
+    featureDirName (str dirName "feature-")
+    featureDir (io/file featureDirName)
+    root (str dirName "feature-/ROOT.war")
+    rootFile (io/file root)
+    filenames (vector (str "feature-" currentMillis "-#100")
+       (str "feature-" currentMillis "-#101")
+       (str "feature-" currentMillis "-#200")
+       (str "develop-" currentMillis "-#101"))]
+       (.mkdir dir)
+    (doseq [e filenames]
+      (touchFile (str dirName e)))
+    (is (= :no-artifacts-found (releaseArtifact "feature-" "#102" dirName)))
+    (is (false? (.isDirectory featureDir)))
+    (is (false? (and (.exists rootFile))))))
+
+(deftest releaseArtifact-test-failed-multiple-artifacts-found
+  (let [currentMillis (millis)
+    dirName (tmpDir "dir-releaseArtifact-test-failed-multiple-artifacts-found" currentMillis )
+    dir (io/file dirName)
+    featureDirName (str dirName "feature-")
+    featureDir (io/file featureDirName)
+    root (str dirName "feature-/ROOT.war")
+    rootFile (io/file root)
+    filenames (vector (str "feature-" currentMillis "-#100")
+       (str "feature-" currentMillis "-#101")
+       (str "feature-abc-" currentMillis "-#101")
+       (str "develop-" currentMillis "-#101"))]
+       (.mkdir dir)
+    (doseq [e filenames]
+      (touchFile (str dirName e)))
+    (is (= :multiple-artifacts-found (releaseArtifact "feature-" "#101" dirName)))
+    (is (false? (.isDirectory featureDir)))
+    (is (false? (and (.exists rootFile))))))
+
 ;;(deftest a-test
 ;;  (testing "FIXME, I fail."
 ;;    (is (= 0 1))))
