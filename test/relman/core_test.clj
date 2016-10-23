@@ -129,7 +129,7 @@
        (.mkdir dir)
     (doseq [e filenames]
       (touchFile (str dirName e)))
-    (releaseArtifact "feature-" "#101" dirName)
+    (is (= :ok (releaseArtifact "feature-" "#101" dirName)))
     (is (true? (.isDirectory featureDir)))
     (is (true? (and (.exists rootFile))))))
 

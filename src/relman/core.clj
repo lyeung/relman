@@ -75,12 +75,13 @@
   ([prefix suffix dirPath]
     (let [artifacts (listFiles prefix suffix dirPath)]
       (cond
-        (<= (count artifacts) 0) :no-artifacts-found
-        (> (count artifacts) 1) :multiple-artifacts-found
+        (<= (count artifacts) 0) :no-artifacts-found 
+        (> (count artifacts) 1) :multiple-artifacts-found 
         :else
           (do (copyToRootWarFilename
                 (prepareDir (first artifacts) prefix) prefix)
-          (first artifacts))
+              :ok )
+            ;;{ :type 'ok :artifact (first artifacts) })
         ))))
 
 
