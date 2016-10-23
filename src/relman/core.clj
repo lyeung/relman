@@ -80,9 +80,7 @@
         :else
           (do (copyToRootWarFilename
                 (prepareDir (first artifacts) prefix) prefix)
-              :ok )
-            ;;{ :type 'ok :artifact (first artifacts) })
-        ))))
+              :ok )))))
 
 
 (defn printUsage
